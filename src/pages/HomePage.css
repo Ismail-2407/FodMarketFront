@@ -1,0 +1,51 @@
+.home-container {
+  max-width: 800px;
+  margin: 100px auto;
+  text-align: center;
+  padding: 20px;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.home-container h1 {
+  font-size: 2.8rem;
+  margin-bottom: 10px;
+  color: #2d3748;
+}
+
+.home-container h1 span {
+  color: #38a169;
+}
+
+.home-container p {
+  font-size: 1.2rem;
+  color: #4a5568;
+  margin-bottom: 40px;
+}
+
+.home-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.btn {
+  padding: 12px 24px;
+  font-size: 1rem;
+  text-decoration: none;
+  color: white;
+  background-color: #38a169;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.btn:hover {
+  background-color: #2f855a;
+}
+
+.btn-secondary {
+  background-color: #4a5568;
+}
+
+.btn-secondary:hover {
+  background-color: #2d3748;
+}

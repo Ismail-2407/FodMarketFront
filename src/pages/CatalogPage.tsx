@@ -1,98 +1,146 @@
-import { useEffect, useState } from "react";
-import styles from "./CatalogPage.module.css";
+import React, { useEffect, useState } from "react";
+import Modal from "react-modal";
 import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
+import { Product } from "../types";
+import { useNavigate } from "react-router-dom";
+import ProductCard from "../components/ProductCard";
+import AddressSelector from "../components/AddressSelector";
+import styles from "./CatalogPage.module.css";
+import axiosInstance from "../api/axiosInstance";
 
-interface Product {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  imageUrl: string;
-  category: string;
-}
+Modal.setAppElement("#root"); // обязательно для a11y
 
-function CatalogPage() {
+const CatalogPage = () => {
   const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState<string>("Все");
+  const [search, setSearch] = useState<string>("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const { addToCart } = useCart();
-
-  useEffect(() => {
-    fetch(`http://localhost:5091/api/products`)
-      .then((res) => res.json())
-      .then((data) => setProducts(data))
-      .catch((err) => console.error("Ошибка загрузки продуктов:", err));
-  }, []);
+  const { fetchCart } = useCart();
+  const { isAdmin, loading, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    fetch(`http://localhost:5091/api/products/categories`)
-      .then((res) => res.json())
-      .then((data) => setCategories(data))
-      .catch((err) => console.error("Ошибка загрузки категорий:", err));
+    const fetchProducts = async () => {
+      try {
+        const res = await axiosInstance.get("/products");
+        setProducts(res.data);
+      } catch (error) {
+        console.error("Ошибка при загрузке продуктов", error);
+      }
+    };
+
+    fetchProducts();
   }, []);
+
+  const handleAddToCart = async (productId: number) => {
+    if (!isAuthenticated) {
+      navigate("/login");
+      return;
+    }
+
+    try {
+      await axiosInstance.post(`/cart/add/${productId}`);
+      await fetchCart();
+      alert("Товар добавлен в корзину");
+    } catch (error) {
+      console.error(error);
+      if ((error as any)?.response?.status === 401) {
+        navigate("/login");
+      } else {
+        alert("Ошибка при добавлении в корзину");
+      }
+    }
+  };
 
   const filteredProducts = products.filter((product) => {
-    const matchesCategory =
-      !selectedCategory || product.category === selectedCategory;
-    const matchesSearch = product.name
-      .toLowerCase()
-      .includes(search.toLowerCase());
-    return matchesCategory && matchesSearch;
+    return (
+      (category === "Все" || product.category === category) &&
+      product.name.toLowerCase().includes(search.toLowerCase())
+    );
   });
 
-  return (
-    <div className={styles.container}>
-      <h1 className={styles.title}>Каталог товаров</h1>
+  const uniqueCategories = ["Все", ...new Set(products.map((p) => p.category))];
 
-      <div className={styles.filters}>
+  if (loading) return <div className={styles.title}>Загрузка...</div>;
+
+  return (
+    <div className={styles.catalogContainer}>
+      <div className={styles.actions}>
+        {isAdmin && (
+          <button
+            className={styles.adminButton}
+            onClick={() => navigate("/admin")}
+          >
+            Перейти в админку
+          </button>
+        )}
+
+        <h1 className={styles.title}>Каталог товаров</h1>
+
+        <button
+          className={styles.goToCartBtn}
+          onClick={() => navigate("/cart")}
+        >
+          Перейти в корзину
+        </button>
+
+        <button
+          className={styles.addressButton}
+          onClick={() => setIsModalOpen(true)}
+        >
+          Уточните адрес доставки
+        </button>
+      </div>
+
+      <div className={styles.topBar}>
         <input
           type="text"
-          placeholder="Поиск..."
+          placeholder="Поиск по названию..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className={styles.input}
+          className={styles.searchInput}
         />
 
-        <select
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-          className={styles.select}
-        >
-          <option value="">Все категории</option>
-          {categories.map((category) => (
-            <option key={category} value={category}>
-              {category}
-            </option>
+        <div className={styles.categoryButtons}>
+          {uniqueCategories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setCategory(cat)}
+              className={`${styles.categoryButton} ${
+                category === cat ? styles.active : ""
+              }`}
+            >
+              {cat}
+            </button>
           ))}
-        </select>
+        </div>
       </div>
 
-      <div className={styles.gridContainer}>
+      <div className={styles.grid}>
         {filteredProducts.map((product) => (
-          <div key={product.id} className={styles.card}>
-            <img
-              src={product.imageUrl}
-              alt={product.name}
-              className={styles.image}
-            />
-            <div className={styles.content}>
-              <h3 className={styles.name}>{product.name}</h3>
-              <p className={styles.description}>{product.description}</p>
-              <p className={styles.price}>{product.price} ₽</p>
-              <button
-                className={styles.button}
-                onClick={() => addToCart({ ...product, quantity: 1 })}
-              >
-                В корзину
-              </button>
-            </div>
-          </div>
+          <ProductCard
+            key={product.id}
+            name={product.name}
+            description={product.description}
+            price={product.price}
+            imageUrl={product.imageUrl}
+            onAddToCart={() => handleAddToCart(product.id)}
+          />
         ))}
       </div>
+
+      <Modal
+        isOpen={isModalOpen}
+        onRequestClose={() => setIsModalOpen(false)}
+        className={styles.modalContent}
+        overlayClassName={styles.modalOverlay}
+      >
+        <AddressSelector onClose={() => setIsModalOpen(false)} />
+      </Modal>
     </div>
   );
-}
+};
 
 export default CatalogPage;

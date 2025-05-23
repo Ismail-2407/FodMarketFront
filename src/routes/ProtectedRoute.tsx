@@ -1,21 +1,24 @@
-import { useAuth } from "../context/AuthContext";
+import React, { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
-import { ReactNode } from "react";
+import { useAuth } from "../context/AuthContext";
 
-interface ProtectedRouteProps {
+type ProtectedRouteProps = {
   children: ReactNode;
-  requiredRole: string;
-}
+  requiredRole?: string;
+};
 
-const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
-  const { user } = useAuth();
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
+  children,
+  requiredRole,
+}) => {
+  const { token, currentUser } = useAuth();
 
-  if (!user) {
-    return <Navigate to="/login" />;
+  if (!token || !currentUser) {
+    return <Navigate to="/login" replace />;
   }
 
-  if (user.role !== requiredRole) {
-    return <Navigate to="/" />;
+  if (requiredRole && currentUser.role !== requiredRole) {
+    return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;

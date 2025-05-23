@@ -1,57 +1,60 @@
-.container {
+.cartPage {
+  padding: 40px 20px;
   max-width: 800px;
   margin: 0 auto;
-  padding: 40px 20px;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.list {
+.cartList {
   list-style: none;
   padding: 0;
+  margin: 0;
 }
 
-.item {
+.cartItem {
   display: flex;
-  margin-bottom: 24px;
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+  align-items: center;
+  margin-bottom: 20px;
+  border: 1px solid #e0e0e0;
+  padding: 15px;
+  gap: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background-color: #fff;
 }
 
-.image {
-  width: 150px;
-  height: 150px;
-  object-fit: cover;
+.cartItem:hover {
+  transform: scale(1.01);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.info {
-  padding: 20px;
-  flex: 1;
-}
-
-.info input {
-  width: 60px;
-  margin: 0 10px;
-}
-
-.total {
-  margin-top: 20px;
-  font-size: 20px;
-  text-align: right;
-}
-
-.orderButton {
-  display: block;
-  margin: 20px auto;
-  background: #27ae60;
-  color: white;
-  border: none;
-  padding: 12px 24px;
+.cartItem img {
+  width: 90px;
+  height: 90px;
   border-radius: 8px;
-  cursor: pointer;
-  font-size: 16px;
+  object-fit: cover;
+  flex-shrink: 0;
 }
 
-.orderButton:hover {
-  background: #219150;
+.cartItemInfo {
+  flex-grow: 1;
+}
+
+.cartItemInfo h4 {
+  margin: 0 0 5px;
+  font-size: 1.1rem;
+}
+
+.cartItemInfo p {
+  margin: 0;
+  color: #555;
+}
+
+.summary {
+  margin-top: 30px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-align: right;
+  color: #333;
 }

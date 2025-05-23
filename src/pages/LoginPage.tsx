@@ -1,59 +1,59 @@
-import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import styles from "./AuthForm.module.css";
+import styles from "./LoginPage.module.css";
 
-type LoginForm = {
-  email: string;
-  password: string;
-};
-
-const LoginPage = () => {
-  const { register, handleSubmit } = useForm<LoginForm>();
+const LoginPage: React.FC = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const onSubmit = async (data: LoginForm) => {
-    try {
-      const response = await axios.post(
-        "http://localhost:5091/api/auth/login",
-        data
-      );
-      console.log("Login success:", response.data);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
-      if (response.data.token) {
-        login(response.data.token);
-        navigate("/catalog");
+  const handleLogin = async () => {
+    try {
+      const role = await login(email, password);
+      if (role === "Admin") {
+        navigate("/admin");
       } else {
-        alert("Ошибка: токен не получен от сервера.");
+        navigate("/catalog");
       }
     } catch (error) {
-      console.error("Login Failed:", error);
-      alert("Ошибка входа. Проверьте email и пароль.");
+      console.error("Login error:", error);
+      setError("Ошибка входа: проверьте email и пароль");
     }
   };
 
   return (
-    <div className={styles.container}>
-      <h2>Login</h2>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <input
-          type="email"
-          {...register("email")}
-          placeholder="Email"
-          required
-        />
-        <input
-          type="password"
-          {...register("password")}
-          placeholder="Password"
-          required
-        />
-        <button type="submit">Login</button>
-      </form>
-      <div className={styles.link}>
-        <Link to="/register">Don't have an account? Register</Link>
+    <div className={styles.loginContainer}>
+      <h2 className={styles.title}>Вход</h2>
+      {error && <div className={styles.error}>{error}</div>}
+      <input
+        type="email"
+        placeholder="Email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        className={styles.input}
+      />
+      <input
+        type="password"
+        placeholder="Пароль"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        className={styles.input}
+      />
+      <button onClick={handleLogin} className={styles.button}>
+        Войти
+      </button>
+
+      <div className={styles.links}>
+        <Link to="/forgot-password" className={styles.link}>
+          Забыли пароль?
+        </Link>
+        <Link to="/register" className={styles.link}>
+          Нет аккаунта? Зарегистрируйтесь
+        </Link>
       </div>
     </div>
   );

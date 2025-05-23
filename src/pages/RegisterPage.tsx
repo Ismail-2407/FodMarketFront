@@ -1,56 +1,51 @@
-import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { useAuth } from "../context/AuthContext";
-import styles from "./AuthForm.module.css";
+import styles from "./RegisterPage.module.css";
 
-type RegisterForm = {
-  email: string;
-  password: string;
-};
-
-const RegisterPage = () => {
-  const { register, handleSubmit } = useForm<RegisterForm>();
-  const { login } = useAuth();
+const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  const onSubmit = async (data: RegisterForm) => {
+  const handleRegister = async () => {
     try {
-      const response = await axios.post(
-        "http://localhost:5091/api/auth/register",
-        data
-      );
+      await axios.post("http://localhost:5091/api/auth/register", {
+        email,
+        password,
+      });
 
-      console.log("Registration success:", response.data);
-
-      if (response.data.token) {
-        login(response.data.token);
-        navigate("/catalog");
-      } else {
-        alert("Ошибка: токен не получен.");
-      }
+      alert("Регистрация прошла успешно. Войдите в систему.");
+      navigate("/login");
     } catch (error) {
-      console.error("Registration Failed:", error);
-      alert("Ошибка регистрации. Возможно, такой email уже зарегистрирован.");
+      console.error("Ошибка регистрации:", error);
+      alert("Ошибка регистрации. Попробуйте снова.");
     }
   };
 
   return (
-    <div className={styles.container}>
-      <h2>Register</h2>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <input {...register("email")} placeholder="Email" required />
-        <input
-          type="password"
-          {...register("password")}
-          placeholder="Password"
-          required
-        />
-        <button type="submit">Register</button>
-      </form>
-      <div className={styles.link}>
-        <Link to="/login">Already have an account? Login</Link>
-      </div>
+    <div className={styles.registerContainer}>
+      <h2 className={styles.title}>Регистрация</h2>
+      <input
+        type="email"
+        placeholder="Email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        className={styles.input}
+      />
+      <input
+        type="password"
+        placeholder="Пароль"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        className={styles.input}
+      />
+      <button onClick={handleRegister} className={styles.button}>
+        Зарегистрироваться
+      </button>
+      <a href="/login" className={styles.link}>
+        Уже есть аккаунт? Войти
+      </a>
     </div>
   );
 };

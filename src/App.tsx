@@ -1,28 +1,45 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { useAuth } from "./context/AuthContext";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import CatalogPage from "./pages/CatalogPage";
-import CartPage from "./pages/CartPage";
 import AdminPage from "./pages/AdminPage";
-import ProtectedRoute from "./routes/ProtectedRoute";
+import CartPage from "./pages/CartPage";
+import ForgotPassword from "./components/ForgotPassword";
+import ResetPassword from "./components/ResetPassword";
 
 function App() {
+  const { isAuthenticated, isAdmin } = useAuth();
+
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      <Route path="/catalog" element={<CatalogPage />} />
-      <Route path="/cart" element={<CartPage />} />
+      <Route
+        path="/login"
+        element={!isAuthenticated ? <LoginPage /> : <Navigate to="/" />}
+      />
+      <Route
+        path="/register"
+        element={!isAuthenticated ? <RegisterPage /> : <Navigate to="/" />}
+      />
+      <Route
+        path="/catalog"
+        element={isAuthenticated ? <CatalogPage /> : <Navigate to="/login" />}
+      />
       <Route
         path="/admin"
         element={
-          <ProtectedRoute requiredRole="Admin">
-            <AdminPage />
-          </ProtectedRoute>
+          isAuthenticated && isAdmin ? <AdminPage /> : <Navigate to="/" />
         }
       />
+      <Route
+        path="/cart"
+        element={isAuthenticated ? <CartPage /> : <Navigate to="/login" />}
+      />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );
 }

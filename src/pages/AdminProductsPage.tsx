@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Product } from "../types/Product";
+import { Product } from "../types";
 import styles from "./AdminProductsPage.module.css";
 
 const API_URL = "http://localhost:5091";

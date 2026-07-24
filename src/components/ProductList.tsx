@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import ProductCard from "./ProductCard";
 import "./ProductList.css";
-import { useCart } from "../context/CartContext";
 
 type Product = {
   id: number;
@@ -13,39 +12,39 @@ type Product = {
 
 const ProductList: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
-  const { addToCart } = useCart();
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const res = await fetch("http://localhost:5091/api/products");
         if (!res.ok) {
-          throw new Error("Ошибка загрузки продуктов");
+          throw new Error("Failed to load products");
         }
         const data = await res.json();
-        setProducts(data);
+        const list = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.$values)
+            ? data.$values
+            : [];
+        setProducts(list);
       } catch (error) {
         console.error(error);
       }
     };
 
-    fetchProducts();
+    void fetchProducts();
   }, []);
-
-  const handleAddToCart = (productId: number) => {
-    addToCart(productId);
-  };
 
   return (
     <div className="product-list">
       {products.map((product) => (
         <ProductCard
           key={product.id}
+          productId={product.id}
           name={product.name}
           description={product.description}
           price={product.price}
-          imageUrl={product.imageUrl}
-          onAddToCart={() => handleAddToCart(product.id)}
+          imageUrl={`http://localhost:5091${product.imageUrl}`}
         />
       ))}
     </div>

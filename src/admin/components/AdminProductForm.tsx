@@ -6,7 +6,6 @@ interface Product {
   name: string;
   description: string;
   price: number;
-  imageUrl: string;
   category: string;
 }
 
@@ -20,12 +19,20 @@ const AdminProductForm = ({ product, onSaved }: Props) => {
     name: "",
     description: "",
     price: 0,
-    imageUrl: "",
     category: "",
   });
 
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
   useEffect(() => {
-    if (product) setFormData(product);
+    if (product) {
+      // When editing, prefill text fields but reset image file selection.
+      const { id, name, description, price, category } = product;
+      setFormData({ id, name, description, price, category });
+      setImageFile(null);
+      setImagePreview(null);
+    }
   }, [product]);
 
   const handleChange = (
@@ -45,19 +52,30 @@ const AdminProductForm = ({ product, onSaved }: Props) => {
       ? `http://localhost:5091/api/products/${product.id}`
       : "http://localhost:5091/api/products";
 
+    const formDataToSend = new FormData();
+    formDataToSend.append("name", formData.name);
+    formDataToSend.append("description", formData.description);
+    formDataToSend.append("price", String(formData.price));
+    formDataToSend.append("category", formData.category);
+
+    if (imageFile) {
+      formDataToSend.append("image", imageFile);
+    }
+
     await fetch(url, {
       method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
+      body: formDataToSend,
     });
 
     setFormData({
       name: "",
       description: "",
       price: 0,
-      imageUrl: "",
       category: "",
     });
+
+    setImageFile(null);
+    setImagePreview(null);
 
     onSaved();
   };
@@ -88,13 +106,40 @@ const AdminProductForm = ({ product, onSaved }: Props) => {
           onChange={handleChange}
           required
         />
-        <input
-          name="imageUrl"
-          placeholder="URL изображения"
-          value={formData.imageUrl}
-          onChange={handleChange}
-          required
-        />
+        <div className={styles.fileInputContainer}>
+          <label className={styles.fileInputLabel}>
+            {imageFile ? "Изменить изображение" : "Выбрать изображение"}
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0] ?? null;
+                setImageFile(file);
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onloadend = () => {
+                    setImagePreview(reader.result as string);
+                  };
+                  reader.readAsDataURL(file);
+                } else {
+                  setImagePreview(null);
+                }
+              }}
+              required={!product}
+              className={styles.fileInput}
+            />
+          </label>
+          {imagePreview && (
+            <div className={styles.imagePreview}>
+              <img src={imagePreview} alt="Предпросмотр" />
+            </div>
+          )}
+          {product && !imageFile && (
+            <p className={styles.imageHint}>
+              Текущее изображение будет сохранено, если новое не выбрано
+            </p>
+          )}
+        </div>
         <input
           name="category"
           placeholder="Категория"

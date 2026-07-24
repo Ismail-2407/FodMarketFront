@@ -1,64 +1,335 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
 .registerContainer {
-  max-width: 400px;
-  margin: 50px auto;
-  padding: 2rem;
-  background-color: #ffffff;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  border-radius: 16px;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.3)),
+    url("https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80");
+  background-size: cover;
+  background-position: center;
+  padding: 20px;
+  font-family: "Poppins", sans-serif;
+  position: relative;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.registerContainer::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    45deg,
+    rgba(56, 161, 105, 0.3),
+    rgba(47, 133, 90, 0.3)
+  );
+  backdrop-filter: blur(5px);
+}
+
+.formCard {
+  width: 100%;
+  max-width: 480px;
+  padding: 3rem;
+  background: var(--color-card);
+  border-radius: 24px;
+  box-shadow: 0 25px 70px var(--color-shadow), 0 0 0 1px var(--color-border);
+  position: relative;
+  overflow: hidden;
+  animation: fadeIn 0.6s ease-out;
+  box-sizing: border-box;
+}
+
+.formCard::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #38a169, #2f855a, #38a169);
+  background-size: 200% 100%;
+  animation: gradient 4s linear infinite;
 }
 
 .title {
   text-align: center;
-  font-size: 28px;
-  font-weight: bold;
+  font-size: 2.5rem;
+  font-weight: 700;
+  background: linear-gradient(120deg, #2f855a, #38a169);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  margin-bottom: 2.5rem;
+  position: relative;
+}
+
+.subtitle {
+  text-align: center;
+  color: var(--color-text-muted);
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+}
+
+.inputGroup {
+  position: relative;
   margin-bottom: 1.5rem;
-  color: #333;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .input {
-  display: block;
   width: 100%;
-  padding: 12px 14px;
-  margin-bottom: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-size: 16px;
-  transition: border-color 0.3s, box-shadow 0.3s;
+  padding: 1.2rem;
+  padding-left: 3.2rem;
+  padding-right: 3.2rem;
+  background: var(--color-input-bg);
+  border: 2px solid var(--color-border);
+  border-radius: 12px;
+  font-size: 1rem;
+  color: var(--color-text);
+  transition: all 0.3s ease;
+  box-sizing: border-box;
 }
 
 .input:focus {
-  border-color: #28a745;
-  box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
+  border-color: #38a169;
+  background: var(--color-card-hover);
+  box-shadow: 0 0 0 3px rgba(56, 161, 105, 0.2);
   outline: none;
 }
 
-.button {
-  padding: 12px;
-  width: 100%;
-  background-color: #28a745;
-  border: none;
-  border-radius: 8px;
-  color: white;
-  font-weight: bold;
-  font-size: 16px;
+.inputIcon {
+  position: absolute;
+  left: 1.2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-soft);
+  transition: all 0.3s ease;
+  font-size: 1.1rem;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.inputGroup .inputIcon:last-of-type {
+  pointer-events: auto;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+}
+
+.input:focus + .inputIcon {
+  color: #38a169;
+}
+
+.eyeButton {
+  position: absolute;
+  right: 1.2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--color-text-soft);
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.3s ease;
+  z-index: 2;
+}
+
+.eyeButton:hover {
+  color: #38a169;
+}
+
+.input:focus ~ .eyeButton {
+  color: #38a169;
+}
+
+.button {
+  width: 100%;
+  padding: 1.2rem;
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-primary-strong)
+  );
+  color: var(--color-button-text);
+  border: none;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  margin-top: 1rem;
+  box-sizing: border-box;
+}
+
+.button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  transition: 0.5s;
 }
 
 .button:hover {
-  background-color: #218838;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(56, 161, 105, 0.4);
+}
+
+.button:hover::before {
+  left: 100%;
+}
+
+.button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .link {
   display: block;
-  margin-top: 1rem;
   text-align: center;
-  color: #007bff;
+  color: var(--color-text-muted);
   text-decoration: none;
-  font-size: 14px;
+  margin-top: 1.5rem;
+  font-size: 1rem;
+  transition: color 0.3s ease;
 }
 
 .link:hover {
-  text-decoration: underline;
+  color: #38a169;
+}
+
+.error {
+  background-color: var(--color-danger-bg);
+  border: 1px solid var(--color-danger-border);
+  color: var(--color-danger-text);
+  padding: 1rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+  animation: shake 0.5s ease-in-out;
+}
+
+.passwordStrength {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--color-text-soft);
+}
+
+.passwordStrengthBar {
+  height: 4px;
+  background: var(--color-border);
+  border-radius: 2px;
+  margin-top: 0.5rem;
+  overflow: hidden;
+}
+
+.passwordStrengthFill {
+  height: 100%;
+  transition: all 0.3s ease;
+  border-radius: 2px;
+}
+
+.weak {
+  width: 33.33%;
+  background: #f56565;
+}
+.medium {
+  width: 66.66%;
+  background: #ecc94b;
+}
+.strong {
+  width: 100%;
+  background: #48bb78;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 200% 0%;
+  }
+}
+
+@media (max-width: 480px) {
+  .formCard {
+    padding: 2rem 1.5rem;
+    max-width: 100%;
+  }
+
+  .title {
+    font-size: 2rem;
+  }
+
+  .input {
+    font-size: 0.95rem;
+    padding: 1rem;
+    padding-left: 2.8rem;
+    padding-right: 2.8rem;
+  }
+
+  .inputIcon {
+    left: 1rem;
+    font-size: 1rem;
+  }
+
+  .eyeButton {
+    right: 1rem;
+    padding: 0.4rem;
+  }
 }

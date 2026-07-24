@@ -1,65 +1,237 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
 .loginContainer {
-  max-width: 400px;
-  margin: 50px auto;
-  padding: 2rem;
-  background-color: #ffffff;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  border-radius: 16px;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(
+      135deg,
+      rgba(15, 23, 42, 0.12),
+      rgba(15, 23, 42, 0.24)
+    ),
+    url("https://images.unsplash.com/photo-1606787366850-de6330128bfc?auto=format&fit=crop&q=80");
+  background-size: cover;
+  background-position: center;
+  padding: 20px;
+  font-family: "Poppins", sans-serif;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.formCard {
+  width: 100%;
+  max-width: 450px;
+  padding: 3rem 2.5rem;
+  background: var(--color-card);
+  backdrop-filter: blur(10px);
+  border-radius: 24px;
+  box-shadow: 0 20px 60px var(--color-shadow), 0 1px 2px var(--color-shadow),
+    0 0 0 1px var(--color-border);
+  animation: slideUp 0.6s ease-out;
+  box-sizing: border-box;
 }
 
 .title {
   text-align: center;
-  font-size: 28px;
-  font-weight: bold;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  color: var(--color-text);
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.title::after {
+  content: "";
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 4px;
+  background: linear-gradient(120deg, #38a169, #2f855a);
+  border-radius: 2px;
+}
+
+.inputGroup {
+  position: relative;
   margin-bottom: 1.5rem;
-  color: #333;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .input {
-  display: block;
   width: 100%;
-  padding: 12px 14px;
-  margin-bottom: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-size: 16px;
-  transition: border-color 0.3s, box-shadow 0.3s;
-  background-color: #f5f8ff;
+  padding: 1rem 1.2rem;
+  padding-left: 3rem;
+  border: 2px solid var(--color-border);
+  border-radius: 12px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background-color: var(--color-input-bg);
+  color: var(--color-text);
+  box-sizing: border-box;
 }
 
 .input:focus {
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+  border-color: #38a169;
+  box-shadow: 0 0 0 3px rgba(56, 161, 105, 0.2);
   outline: none;
 }
 
+.inputIcon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-soft);
+  transition: color 0.3s ease;
+}
+
+.input:focus + .inputIcon {
+  color: #38a169;
+}
+
 .button {
-  padding: 12px;
   width: 100%;
-  background-color: #4caf50;
+  padding: 1rem;
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-primary-strong)
+  );
   border: none;
-  border-radius: 8px;
-  color: white;
-  font-weight: bold;
-  font-size: 16px;
+  border-radius: 12px;
+  color: var(--color-button-text);
+  font-weight: 600;
+  font-size: 1.1rem;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
+  margin-top: 1rem;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: 0.5s;
 }
 
 .button:hover {
-  background-color: #45a049;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(56, 161, 105, 0.3);
+}
+
+.button:hover::before {
+  left: 100%;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+.button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.links {
+  margin-top: 2rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .link {
-  display: block;
-  margin-top: 1rem;
-  text-align: center;
-  color: #007bff;
+  color: var(--color-text-muted);
   text-decoration: none;
-  font-size: 14px;
+  font-size: 0.95rem;
+  transition: color 0.3s ease;
 }
 
 .link:hover {
-  text-decoration: underline;
+  color: #38a169;
+  text-decoration: none;
+}
+
+.error {
+  background-color: var(--color-danger-bg);
+  border: 1px solid var(--color-danger-border);
+  color: var(--color-danger-text);
+  padding: 1rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
+}
+
+@media (max-width: 480px) {
+  .formCard {
+    padding: 2rem 1.5rem;
+    max-width: 100%;
+  }
+
+  .title {
+    font-size: 2rem;
+  }
+
+  .input {
+    font-size: 0.95rem;
+    padding: 1rem;
+    padding-left: 2.8rem;
+  }
+
+  .inputIcon {
+    left: 1rem;
+    font-size: 1rem;
+  }
 }

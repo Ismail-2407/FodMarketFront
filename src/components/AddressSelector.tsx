@@ -12,18 +12,51 @@ interface Props {
   onClose: () => void;
 }
 
+type YandexMapClickEvent = {
+  get: (name: "coords") => [number, number];
+};
+
+type YandexGeoObject = {
+  properties: {
+    get: (name: "text" | "name") => string | undefined;
+  };
+};
+
+type YandexGeocodeResult = {
+  geoObjects: {
+    get: (index: number) => YandexGeoObject | undefined;
+  };
+};
+
+type YandexMapsApi = {
+  geocode: (coords: [number, number]) => Promise<YandexGeocodeResult>;
+};
+
+const getYmapsApi = (): YandexMapsApi | null => {
+  const mapsWindow = window as unknown as { ymaps?: YandexMapsApi };
+  return mapsWindow.ymaps ?? null;
+};
+
 const AddressSelector: React.FC<Props> = ({ onClose }) => {
   const [address, setAddress] = useState("");
   const [coords, setCoords] = useState<[number, number]>([40.4093, 49.8671]);
 
-  const handleMapClick = async (e: any) => {
+  const handleMapClick = async (e: YandexMapClickEvent) => {
     const newCoords = e.get("coords");
     setCoords(newCoords);
 
-    const geocoder = await window.ymaps.geocode(newCoords);
+    const ymapsApi = getYmapsApi();
+    if (!ymapsApi) {
+      setAddress("Не удалось определить адрес");
+      return;
+    }
+
+    const geocoder = await ymapsApi.geocode(newCoords);
     const firstGeoObject = geocoder.geoObjects.get(0);
     const newAddress =
-      firstGeoObject?.getAddressLine() || "Не удалось определить адрес";
+      firstGeoObject?.properties.get("text") ||
+      firstGeoObject?.properties.get("name") ||
+      "Не удалось определить адрес";
     setAddress(newAddress);
   };
 
@@ -44,8 +77,8 @@ const AddressSelector: React.FC<Props> = ({ onClose }) => {
             onClick={handleMapClick}
             modules={["geocode"]}
           >
-            <GeolocationControl options={{ float: "left" }} />
-            <ZoomControl options={{ float: "right" }} />
+            <GeolocationControl options={{ position: { left: 10, top: 10 } }} />
+            <ZoomControl options={{ position: { right: 10, top: 10 } }} />
             <Placemark geometry={coords} />
           </Map>
         </YMaps>

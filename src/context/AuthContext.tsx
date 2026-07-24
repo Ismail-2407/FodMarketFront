@@ -9,7 +9,7 @@ export type AuthContextType = {
   isAuthenticated: boolean;
   currentUser: User | null;
   login: (email: string, password: string) => Promise<string>;
-  logout: () => void;
+  logout: () => Promise<void>;
   isAdmin: boolean;
   loading: boolean;
 };
@@ -19,17 +19,30 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await axiosInstance.get("/user/current");
-        if (response.data) {
+        const token = localStorage.getItem("token");
+
+        // ✅ Если токена нет — сразу не авторизован
+        if (!token) {
+          setIsAuthenticated(false);
+          setCurrentUser(null);
+          setLoading(false);
+          return;
+        }
+
+        const response = await axiosInstance.get("/auth/check");
+        if (response.data?.role) {
           setIsAuthenticated(true);
           setCurrentUser({ role: response.data.role });
+        } else {
+          setIsAuthenticated(false);
+          setCurrentUser(null);
         }
       } catch {
         setIsAuthenticated(false);
@@ -48,9 +61,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         email,
         password,
       });
-      setIsAuthenticated(true);
-      setCurrentUser({ role: response.data.role });
-      return response.data.role;
+
+      if (response.data?.role) {
+        setIsAuthenticated(true);
+        setCurrentUser({ role: response.data.role });
+
+        // ✅ Сохраняем токен в localStorage
+        if (response.data?.token) {
+          localStorage.setItem("token", response.data.token);
+        }
+
+        return response.data.role;
+      } else {
+        throw new Error("Login failed: role not returned");
+      }
     } catch (error) {
       setIsAuthenticated(false);
       setCurrentUser(null);
@@ -61,10 +85,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const logout = async () => {
     try {
       await axiosInstance.post("/auth/logout");
+    } finally {
       setIsAuthenticated(false);
       setCurrentUser(null);
-    } catch (error) {
-      console.error("Logout error:", error);
+      // ✅ Удаляем токен из localStorage
+      localStorage.removeItem("token");
     }
   };
 
@@ -77,10 +102,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     loading,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {!loading && children}
+    </AuthContext.Provider>
+  );
 };
 
-export const useAuth = () => {
+export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error("useAuth must be used within an AuthProvider");

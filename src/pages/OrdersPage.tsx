@@ -1,24 +1,27 @@
-// src/pages/OrdersPage.tsx
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { fetchOrders, cancelOrder } from "../api/orders";
 import { Order } from "../types/order";
 import { useAuth } from "../context/AuthContext";
 
 export const OrdersPage = () => {
-  const { token } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!token) return;
-    fetchOrders(token)
+    if (!isAuthenticated) {
+      setLoading(false);
+      return;
+    }
+
+    fetchOrders()
       .then(setOrders)
       .finally(() => setLoading(false));
-  }, [token]);
+  }, [isAuthenticated]);
 
   const handleCancel = async (id: number) => {
-    if (!token) return;
-    await cancelOrder(token, id);
+    if (!isAuthenticated) return;
+    await cancelOrder(id);
     setOrders((prev) =>
       prev.map((o) => (o.id === id ? { ...o, status: "Cancelled" } : o))
     );

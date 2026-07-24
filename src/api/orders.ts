@@ -1,28 +1,40 @@
-import axios from "axios";
+import axiosInstance from "./axiosInstance";
 import { Order } from "../types/order";
 
-const API_URL = "http://localhost:5091/api/orders";
+const API_URL = "/orders";
 
-export async function fetchOrders(token: string): Promise<Order[]> {
-  const response = await axios.get<Order[]>(API_URL, {
-    headers: { Authorization: `Bearer ${token}` },
+export type PaymentMethod = "PayPal" | "Cash";
+
+function asArray<T>(data: unknown): T[] {
+  if (Array.isArray(data)) return data as T[];
+  if (data && typeof data === "object") {
+    const obj = data as Record<string, unknown>;
+    if (Array.isArray(obj.$values)) return obj.$values as T[];
+  }
+  return [];
+}
+
+export async function fetchOrders(): Promise<Order[]> {
+  try {
+    const res = await axiosInstance.get(API_URL);
+    return asArray<Order>(res.data);
+  } catch (error) {
+    console.error("Error in fetchOrders:", error);
+    throw error;
+  }
+}
+
+export async function createOrder(
+  productIds: number[],
+  paymentMethod: PaymentMethod
+) {
+  const response = await axiosInstance.post(API_URL, {
+    productIds,
+    paymentMethod,
   });
   return response.data;
 }
 
-export async function createOrder(token: string, productIds: number[]) {
-  const response = await axios.post(
-    API_URL,
-    { productIds },
-    {
-      headers: { Authorization: `Bearer ${token}` },
-    }
-  );
-  return response.data;
-}
-
-export async function cancelOrder(token: string, orderId: number) {
-  await axios.delete(`${API_URL}/${orderId}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+export async function cancelOrder(orderId: number) {
+  await axiosInstance.delete(`${API_URL}/${orderId}`);
 }

@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import "./HomePage.css";
 import {
@@ -15,27 +16,28 @@ import {
 
 const HomePage = () => {
   const { isAuthenticated, logout } = useAuth();
+  const { t } = useTranslation();
 
   const features = [
     {
       icon: <FaLeaf />,
-      title: "Свежие продукты",
-      description: "Только свежие и качественные продукты каждый день",
+      title: t("home.features.fresh.title"),
+      description: t("home.features.fresh.description"),
     },
     {
       icon: <FaTruck />,
-      title: "Быстрая доставка",
-      description: "Доставка в удобное для вас время и место",
+      title: t("home.features.delivery.title"),
+      description: t("home.features.delivery.description"),
     },
     {
       icon: <FaShieldAlt />,
-      title: "Безопасные платежи",
-      description: "Защищённые и удобные способы оплаты",
+      title: t("home.features.payments.title"),
+      description: t("home.features.payments.description"),
     },
     {
       icon: <FaStar />,
-      title: "Лучшие цены",
-      description: "Конкурентные цены и специальные предложения",
+      title: t("home.features.prices.title"),
+      description: t("home.features.prices.description"),
     },
   ];
 
@@ -51,39 +53,37 @@ const HomePage = () => {
         <div className="hero-section">
           <div className="badge">
             <FaLeaf className="badge-icon" />
-            <span>Экологичные продукты</span>
+            <span>{t("home.badge")}</span>
           </div>
           <h1>
-            Добро пожаловать в <span className="gradient-text">FoodMarket</span>
+            {t("home.welcome")}{" "}
+            <span className="gradient-text">FoodMarket</span>
           </h1>
-          <p className="hero-description">
-            Откройте для себя мир свежих продуктов, отличных цен и превосходного
-            качества. Ваш идеальный выбор для покупок продуктов онлайн!
-          </p>
+          <p className="hero-description">{t("home.description")}</p>
 
           <div className="home-buttons">
             {isAuthenticated ? (
               <>
                 <Link to="/catalog" className="btn btn-primary">
                   <FaShoppingBasket />
-                  <span>Перейти в каталог</span>
+                  <span>{t("home.goToCatalog")}</span>
                   <FaArrowRight className="btn-arrow" />
                 </Link>
                 <button onClick={logout} className="btn btn-secondary">
                   <FaSignOutAlt />
-                  <span>Выйти</span>
+                  <span>{t("home.logout")}</span>
                 </button>
               </>
             ) : (
               <>
                 <Link to="/login" className="btn btn-primary">
                   <FaSignInAlt />
-                  <span>Войти</span>
+                  <span>{t("home.login")}</span>
                   <FaArrowRight className="btn-arrow" />
                 </Link>
                 <Link to="/register" className="btn btn-secondary">
                   <FaUserPlus />
-                  <span>Зарегистрироваться</span>
+                  <span>{t("home.register")}</span>
                 </Link>
               </>
             )}
@@ -91,7 +91,7 @@ const HomePage = () => {
         </div>
 
         <div className="features-section">
-          <h2 className="features-title">Почему выбирают нас</h2>
+          <h2 className="features-title">{t("home.whyUs")}</h2>
           <div className="features-grid">
             {features.map((feature, index) => (
               <div key={index} className="feature-card">

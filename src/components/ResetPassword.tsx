@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import axios from "axios";
 import "./ResetPassword.css";
 import { FaLock, FaCheck } from "react-icons/fa";
+import axiosInstance from "../api/axiosInstance";
 
 interface Message {
   text: string;
@@ -47,11 +48,12 @@ const ResetPassword = () => {
 
     setIsSubmitting(true);
     try {
-      await axios.post(
-        "/api/account/reset-password",
-        { email, token, newPassword },
-        { withCredentials: false }
-      );
+      // ✅ Убрали /api/ в начале — axiosInstance уже имеет baseURL с /api
+      await axiosInstance.post("/account/reset-password", {
+        email,
+        token,
+        newPassword,
+      });
       setMessage({
         text: "✅ Пароль успешно изменён! Теперь вы можете войти с новым паролем.",
         type: "success",
@@ -111,8 +113,8 @@ const ResetPassword = () => {
                 {passwordStrength < 3
                   ? "Слабый пароль"
                   : passwordStrength < 4
-                  ? "Средний пароль"
-                  : "Сильный пароль"}
+                    ? "Средний пароль"
+                    : "Сильный пароль"}
               </span>
             </div>
           )}

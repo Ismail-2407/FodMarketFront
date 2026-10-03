@@ -6,7 +6,9 @@ import {
   ZoomControl,
   Placemark,
 } from "@pbe/react-yandex-maps";
+import { useTranslation } from "react-i18next";
 import styles from "./AddressSelector.module.css";
+import type { AppLocale } from "../i18n";
 
 interface Props {
   onClose: () => void;
@@ -32,6 +34,14 @@ type YandexMapsApi = {
   geocode: (coords: [number, number]) => Promise<YandexGeocodeResult>;
 };
 
+type YandexMapLang = "en_US" | "ru_RU" | "tr_TR" | "en_RU" | "ru_UA" | "uk_UA";
+
+const YANDEX_LANG: Record<AppLocale, YandexMapLang> = {
+  en: "en_US",
+  ru: "ru_RU",
+  az: "en_US", // Yandex Maps has no Azerbaijani locale — fall back to English
+};
+
 const getYmapsApi = (): YandexMapsApi | null => {
   const mapsWindow = window as unknown as { ymaps?: YandexMapsApi };
   return mapsWindow.ymaps ?? null;
@@ -40,6 +50,9 @@ const getYmapsApi = (): YandexMapsApi | null => {
 const AddressSelector: React.FC<Props> = ({ onClose }) => {
   const [address, setAddress] = useState("");
   const [coords, setCoords] = useState<[number, number]>([40.4093, 49.8671]);
+  const { t, i18n } = useTranslation();
+  const mapLang: YandexMapLang =
+    YANDEX_LANG[i18n.language as AppLocale] ?? "en_US";
 
   const handleMapClick = async (e: YandexMapClickEvent) => {
     const newCoords = e.get("coords");
@@ -47,7 +60,7 @@ const AddressSelector: React.FC<Props> = ({ onClose }) => {
 
     const ymapsApi = getYmapsApi();
     if (!ymapsApi) {
-      setAddress("Не удалось определить адрес");
+      setAddress(t("address.geocodeFailed"));
       return;
     }
 
@@ -56,17 +69,17 @@ const AddressSelector: React.FC<Props> = ({ onClose }) => {
     const newAddress =
       firstGeoObject?.properties.get("text") ||
       firstGeoObject?.properties.get("name") ||
-      "Не удалось определить адрес";
+      t("address.geocodeFailed");
     setAddress(newAddress);
   };
 
   return (
     <div className={styles.container}>
-      <h2>Уточните адрес доставки</h2>
+      <h2>{t("address.title")}</h2>
       <div className={styles.mapContainer}>
         <YMaps
           query={{
-            lang: "ru_RU",
+            lang: mapLang,
             apikey: "4319fa3f-e001-4dcc-9b6e-c3f6f18836d0",
           }}
         >
@@ -87,11 +100,11 @@ const AddressSelector: React.FC<Props> = ({ onClose }) => {
           className={styles.input}
           value={address}
           onChange={(e) => setAddress(e.target.value)}
-          placeholder="Введите адрес вручную"
+          placeholder={t("address.placeholder")}
         />
 
         <button className={styles.button} onClick={onClose}>
-          Доставить сюда
+          {t("address.deliverHere")}
         </button>
       </div>
     </div>

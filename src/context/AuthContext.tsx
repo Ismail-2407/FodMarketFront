@@ -3,6 +3,7 @@ import axiosInstance from "../api/axiosInstance";
 
 type User = {
   role: string | null;
+  email?: string;
 };
 
 export type AuthContextType = {
@@ -39,7 +40,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         const response = await axiosInstance.get("/auth/check");
         if (response.data?.role) {
           setIsAuthenticated(true);
-          setCurrentUser({ role: response.data.role });
+          setCurrentUser({
+            role: response.data.role,
+            email: response.data.email,
+          });
         } else {
           setIsAuthenticated(false);
           setCurrentUser(null);
@@ -64,7 +68,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       if (response.data?.role) {
         setIsAuthenticated(true);
-        setCurrentUser({ role: response.data.role });
+        setCurrentUser({ role: response.data.role, email });
 
         // ✅ Сохраняем токен в localStorage
         if (response.data?.token) {

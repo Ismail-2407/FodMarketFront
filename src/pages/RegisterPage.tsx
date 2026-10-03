@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import {
   FaEnvelope,
@@ -12,6 +12,7 @@ import styles from "./RegisterPage.module.css";
 
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -57,7 +58,7 @@ const RegisterPage: React.FC = () => {
 
     if (passwordStrength === "weak") {
       setError(
-        "Пароль слишком слабый. Добавьте заглавные буквы, цифры и специальные символы"
+        "Пароль слишком слабый. Добавьте заглавные буквы, цифры и специальные символы",
       );
       return;
     }
@@ -73,6 +74,7 @@ const RegisterPage: React.FC = () => {
       navigate("/login", {
         state: {
           message: "Регистрация успешна! Теперь вы можете войти в систему.",
+          from: (location.state as { from?: string } | null)?.from,
         },
       });
     } catch (error: unknown) {
@@ -80,7 +82,7 @@ const RegisterPage: React.FC = () => {
       if (axios.isAxiosError(error)) {
         setError(
           error.response?.data?.message ||
-            "Ошибка регистрации. Попробуйте снова."
+            "Ошибка регистрации. Попробуйте снова.",
         );
       } else {
         setError("Произошла неизвестная ошибка");
@@ -180,7 +182,7 @@ const RegisterPage: React.FC = () => {
           )}
         </button>
 
-        <Link to="/login" className={styles.link}>
+        <Link to="/login" state={location.state} className={styles.link}>
           Уже есть аккаунт? Войти
         </Link>
       </form>

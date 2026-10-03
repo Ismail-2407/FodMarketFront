@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { FaEnvelope, FaLock, FaSpinner } from "react-icons/fa";
 import styles from "./LoginPage.module.css";
@@ -7,6 +7,7 @@ import styles from "./LoginPage.module.css";
 const LoginPage: React.FC = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,7 +24,8 @@ const LoginPage: React.FC = () => {
       if (role === "Admin") {
         navigate("/admin");
       } else {
-        navigate("/catalog");
+        const from = (location.state as { from?: string } | null)?.from;
+        navigate(from === "/profile" ? "/profile" : "/catalog");
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -72,7 +74,7 @@ const LoginPage: React.FC = () => {
           <Link to="/forgot-password" className={styles.link}>
             Забыли пароль?
           </Link>
-          <Link to="/register" className={styles.link}>
+          <Link to="/register" state={location.state} className={styles.link}>
             Нет аккаунта? Зарегистрируйтесь
           </Link>
         </div>

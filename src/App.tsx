@@ -1,5 +1,6 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import CatalogPage from "./pages/CatalogPage";
@@ -9,6 +10,7 @@ import AdminPage from "./pages/AdminPage";
 import UsersPage from "./pages/UsersPage";
 import HomePage from "./pages/HomePage";
 import CartPage from "./pages/CartPage";
+import ProfilePage from "./pages/ProfilePage";
 import ForgotPassword from "./components/ForgotPassword";
 import ResetPassword from "./components/ResetPassword";
 import ThemeToggle from "./components/ThemeToggle";
@@ -17,12 +19,13 @@ import "./styles/global.css";
 
 const AppRoutes: React.FC = () => {
   const { isAuthenticated, isAdmin, loading } = useAuth();
+  const { t } = useTranslation();
 
   if (loading) {
     return (
       <div className="app-loading">
         <ThemeToggle />
-        Loading...
+        {t("common.loading")}
       </div>
     );
   }
@@ -51,6 +54,16 @@ const AppRoutes: React.FC = () => {
           path="/register"
           element={
             isAuthenticated ? <Navigate to="/home" replace /> : <RegisterPage />
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            isAuthenticated ? (
+              <ProfilePage />
+            ) : (
+              <Navigate to="/login" replace state={{ from: "/profile" }} />
+            )
           }
         />
         <Route

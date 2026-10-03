@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import Modal from "react-modal";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import { Product } from "../types";
 import { useNavigate } from "react-router-dom";
@@ -17,14 +18,17 @@ import {
 
 Modal.setAppElement("#root");
 
+const ALL_CATEGORY = "__all__";
+
 const CatalogPage = () => {
   const [products, setProducts] = useState<Product[]>([]);
-  const [category, setCategory] = useState<string>("Все");
+  const [category, setCategory] = useState<string>(ALL_CATEGORY);
   const [search, setSearch] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { isAdmin, loading } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -51,7 +55,7 @@ const CatalogPage = () => {
   }, []);
 
   const uniqueCategories = useMemo(
-    () => ["Все", ...new Set(products.map((p) => p.category))],
+    () => [ALL_CATEGORY, ...new Set(products.map((p) => p.category))],
     [products],
   );
 
@@ -59,7 +63,7 @@ const CatalogPage = () => {
     () =>
       products.filter((product) => {
         return (
-          (category === "Все" || product.category === category) &&
+          (category === ALL_CATEGORY || product.category === category) &&
           product.name.toLowerCase().includes(search.toLowerCase())
         );
       }),
@@ -68,14 +72,17 @@ const CatalogPage = () => {
 
   const stats = useMemo(
     () => [
-      { label: "Товаров", value: filteredProducts.length },
-      { label: "Категорий", value: Math.max(uniqueCategories.length - 1, 0) },
-      { label: "Доставка", value: "30–60 мин" },
+      { label: t("catalog.statsProducts"), value: filteredProducts.length },
+      {
+        label: t("catalog.statsCategories"),
+        value: Math.max(uniqueCategories.length - 1, 0),
+      },
+      { label: t("catalog.statsDelivery"), value: t("catalog.statsDeliveryValue") },
     ],
-    [filteredProducts.length, uniqueCategories.length],
+    [filteredProducts.length, uniqueCategories.length, t],
   );
 
-  if (loading) return <div className={styles.title}>Загрузка...</div>;
+  if (loading) return <div className={styles.title}>{t("catalog.loading")}</div>;
 
   return (
     <div className={styles.pageWrapper}>
@@ -83,30 +90,27 @@ const CatalogPage = () => {
         <div className={styles.heroContent}>
           <div className={styles.badge}>
             <FaLeaf />
-            <span>Свежие поставки ежедневно</span>
+            <span>{t("catalog.badge")}</span>
           </div>
           <h1>
-            Каталог свежих продуктов
+            {t("catalog.title")}
             <span className={styles.gradientText}> FoodMarket</span>
           </h1>
-          <p>
-            Быстрый поиск по категориям, удобная доставка и лучшие предложения
-            каждого дня. Найдите всё необходимое для вкусной и здоровой еды.
-          </p>
+          <p>{t("catalog.description")}</p>
           <div className={styles.heroActions}>
             <button
               className={styles.homeButton}
               onClick={() => navigate("/home")}
             >
               <FaHome />
-              На главную
+              {t("catalog.backHome")}
             </button>
             {isAdmin && (
               <button
                 className={styles.adminButton}
                 onClick={() => navigate("/admin")}
               >
-                Перейти в админку
+                {t("catalog.goToAdmin")}
               </button>
             )}
           </div>
@@ -128,7 +132,7 @@ const CatalogPage = () => {
             <FaSearch className={styles.searchIcon} />
             <input
               type="text"
-              placeholder="Поиск по названию или описанию..."
+              placeholder={t("catalog.searchPlaceholder")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className={styles.searchInput}
@@ -140,13 +144,13 @@ const CatalogPage = () => {
             onClick={() => setIsModalOpen(true)}
           >
             <FaMapMarkerAlt />
-            <span>Уточнить адрес доставки</span>
+            <span>{t("catalog.addressButton")}</span>
             <FaChevronRight className={styles.chevron} />
           </button>
         </div>
 
         <div className={styles.categoryBar}>
-          <div className={styles.categoryLabel}>Категории:</div>
+          <div className={styles.categoryLabel}>{t("catalog.categoriesLabel")}</div>
           <div className={styles.categoryButtons}>
             {uniqueCategories.map((cat) => (
               <button
@@ -156,7 +160,7 @@ const CatalogPage = () => {
                   category === cat ? styles.active : ""
                 }`}
               >
-                {cat}
+                {cat === ALL_CATEGORY ? t("catalog.allCategories") : cat}
               </button>
             ))}
           </div>

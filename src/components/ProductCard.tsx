@@ -6,11 +6,19 @@ import "./ProductCard.css";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import { addFavorite, fetchFavoriteIds, removeFavorite } from "../api/profile";
+import {
+  getProductDescription,
+  getProductName,
+} from "../i18n/categories";
 
 interface ProductCardProps {
   productId: number;
   name: string;
   description: string;
+  nameEn?: string | null;
+  nameAz?: string | null;
+  descriptionEn?: string | null;
+  descriptionAz?: string | null;
   price: number;
   imageUrl: string;
   rating?: number;
@@ -21,6 +29,10 @@ const ProductCard: React.FC<ProductCardProps> = ({
   productId,
   name,
   description,
+  nameEn,
+  nameAz,
+  descriptionEn,
+  descriptionAz,
   price,
   imageUrl,
   rating = 4.8,
@@ -35,7 +47,15 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const { isAuthenticated } = useAuth();
   const { addToCart } = useCart();
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const displayName = getProductName(
+    { name, nameEn, nameAz },
+    i18n.language,
+  );
+  const displayDescription = getProductDescription(
+    { name, description, descriptionEn, descriptionAz },
+    i18n.language,
+  );
 
   useEffect(() => {
     let active = true;
@@ -111,7 +131,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
     >
       {isHot && <div className="product-badge">{t("product.hotDeal")}</div>}
       <div className="image-container">
-        <img src={imageUrl} alt={name} className="product-image" />
+        <img src={imageUrl} alt={displayName} className="product-image" />
         <button
           type="button"
           className={`like-button ${isLiked ? "liked" : ""}`}
@@ -126,8 +146,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
           <FaHeart />
         </button>
       </div>
-      <h3 className="product-title">{name}</h3>
-      <p className="product-description">{description}</p>
+      <h3 className="product-title">{displayName}</h3>
+      <p className="product-description">{displayDescription}</p>
       <div className="product-rating">
         {[...Array(5)].map((_, index) => (
           <FaStar

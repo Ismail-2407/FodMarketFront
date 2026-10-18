@@ -2,9 +2,12 @@ import { useEffect, useState } from "react";
 import { fetchOrders, cancelOrder } from "../api/orders";
 import { Order } from "../types/order";
 import { useAuth } from "../context/AuthContext";
+import { useTranslation } from "react-i18next";
+import { getProductName } from "../i18n/categories";
 
 export const OrdersPage = () => {
   const { isAuthenticated } = useAuth();
+  const { i18n } = useTranslation();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -53,7 +56,7 @@ export const OrdersPage = () => {
           <ul>
             {order.products.map((p) => (
               <li key={p.id}>
-                {p.name} — {p.price} ₽
+                {getProductName(p, i18n.language)} — {p.price} ₽
               </li>
             ))}
           </ul>

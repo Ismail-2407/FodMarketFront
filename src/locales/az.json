@@ -76,6 +76,12 @@
     "addedToCart": "Məhsul səbətə əlavə edildi",
     "addToCartFailed": "Məhsulu səbətə əlavə etmək mümkün olmadı"
   },
+  "categories": {
+    "fruits": "Meyvələr",
+    "vegetables": "Tərəvəzlər",
+    "bakery": "Un məmulatları",
+    "drinks": "İçkilər"
+  },
   "cart": {
     "loading": "Yüklənir...",
     "loadingCart": "Səbət yüklənir...",
@@ -188,7 +194,17 @@
     "loadUsersError": "İstifadəçiləri yükləmək mümkün olmadı",
     "searchPlaceholder": "Email və ya rol üzrə axtar...",
     "noUsersFound": "İstifadəçi tapılmadı",
-    "noUsers": "Mövcud istifadəçi yoxdur"
+    "noUsers": "Mövcud istifadəçi yoxdur",
+    "editProductTitle": "Məhsulu redaktə et",
+    "currentImageHint": "Yeni şəkil seçilmədikdə cari şəkil saxlanılacaq",
+    "saveChanges": "Yadda saxla",
+    "productListTitle": "Məhsulların siyahısı",
+    "editProduct": "Redaktə et",
+    "confirmDeleteProduct": "Məhsulu silmək istəyirsiniz?",
+    "productNameEnglish": "Məhsulun adı (ingilis dilində)",
+    "productNameAzerbaijani": "Məhsulun adı (azərbaycan dilində)",
+    "productDescriptionEnglish": "Məhsulun təsviri (ingilis dilində)",
+    "productDescriptionAzerbaijani": "Məhsulun təsviri (azərbaycan dilində)"
   },
   "profile": {
     "title": "Profil",

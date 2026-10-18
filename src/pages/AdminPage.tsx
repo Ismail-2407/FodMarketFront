@@ -1,8 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import { Product } from "../types";
 import axiosInstance from "../api/axiosInstance";
+import {
+  getProductName,
+  translateCategory,
+} from "../i18n/categories";
 import styles from "./AdminPage.module.css";
 import {
   FaPlus,
@@ -18,23 +23,38 @@ import {
 import { BiLoaderAlt } from "react-icons/bi";
 
 type ProductsResponse = Product[] | { $values?: Product[] };
+type AdminErrorKey =
+  | "admin.loadProductsError"
+  | "admin.deleteProductError"
+  | "admin.selectImageError"
+  | "admin.addProductError";
 
 const AdminPage: React.FC = () => {
   const { isAdmin, loading } = useAuth();
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
 
   const [products, setProducts] = useState<Product[]>([]);
   const [newProduct, setNewProduct] = useState<
-    Omit<Product, "id" | "imageUrl">
+    Omit<Product, "id" | "imageUrl"> & {
+      nameEn: string;
+      nameAz: string;
+      descriptionEn: string;
+      descriptionAz: string;
+    }
   >({
     name: "",
     description: "",
+    nameEn: "",
+    nameAz: "",
+    descriptionEn: "",
+    descriptionAz: "",
     price: 0,
     category: "",
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<AdminErrorKey | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState<number | null>(null);
 
@@ -56,7 +76,7 @@ const AdminPage: React.FC = () => {
       setProducts(list);
       setError(null);
     } catch (err) {
-      setError("Ошибка загрузки товаров");
+      setError("admin.loadProductsError");
       console.error(err);
       setProducts([]);
     }
@@ -72,7 +92,7 @@ const AdminPage: React.FC = () => {
       setError(null);
     } catch (err) {
       setProducts(previousProducts);
-      setError("Ошибка удаления товара");
+      setError("admin.deleteProductError");
       console.error(err);
     } finally {
       setIsDeleting(null);
@@ -81,7 +101,7 @@ const AdminPage: React.FC = () => {
 
   const handleAdd = async () => {
     if (!imageFile) {
-      setError("Пожалуйста, выберите изображение");
+      setError("admin.selectImageError");
       return;
     }
 
@@ -90,6 +110,14 @@ const AdminPage: React.FC = () => {
       const formData = new FormData();
       formData.append("name", newProduct.name);
       formData.append("description", newProduct.description);
+      if (newProduct.nameEn.trim()) formData.append("nameEn", newProduct.nameEn);
+      if (newProduct.nameAz.trim()) formData.append("nameAz", newProduct.nameAz);
+      if (newProduct.descriptionEn.trim()) {
+        formData.append("descriptionEn", newProduct.descriptionEn);
+      }
+      if (newProduct.descriptionAz.trim()) {
+        formData.append("descriptionAz", newProduct.descriptionAz);
+      }
       // ✅ Исправлено — цена всегда с точкой
       formData.append("price", newProduct.price.toFixed(2).replace(",", "."));
       formData.append("category", newProduct.category);
@@ -104,6 +132,10 @@ const AdminPage: React.FC = () => {
       setNewProduct({
         name: "",
         description: "",
+        nameEn: "",
+        nameAz: "",
+        descriptionEn: "",
+        descriptionAz: "",
         price: 0,
         category: "",
       });
@@ -112,7 +144,7 @@ const AdminPage: React.FC = () => {
       fetchProducts();
       setError(null);
     } catch (err) {
-      setError("Ошибка добавления товара");
+      setError("admin.addProductError");
       console.error(err);
     } finally {
       setIsSubmitting(false);
@@ -123,7 +155,7 @@ const AdminPage: React.FC = () => {
     return (
       <div className={styles.loadingContainer}>
         <BiLoaderAlt className={styles.loadingSpinner} />
-        <p>Загрузка...</p>
+        <p>{t("admin.loading")}</p>
       </div>
     );
   }
@@ -144,47 +176,47 @@ const AdminPage: React.FC = () => {
           className={styles.navButton}
           onClick={() => navigate("/catalog")}
         >
-          <FaArrowLeft /> Вернуться в каталог
+          <FaArrowLeft /> {t("admin.backToCatalog")}
         </button>
-        <h1>Панель управления</h1>
+        <h1>{t("admin.dashboardTitle")}</h1>
         <button
           className={styles.navButton}
           onClick={() => navigate("/admin/users")}
         >
-          <FaUser /> Управление пользователями
+          <FaUser /> {t("admin.manageUsers")}
         </button>
       </div>
 
-      {error && <div className={styles.errorMessage}>{error}</div>}
+      {error && <div className={styles.errorMessage}>{t(error)}</div>}
 
       <div className={styles.statsSection}>
         <div className={styles.statCard}>
           <div className={styles.statValue}>{totalProducts}</div>
-          <div className={styles.statLabel}>Товаров</div>
+          <div className={styles.statLabel}>{t("admin.statsProducts")}</div>
         </div>
         <div className={styles.statCard}>
           <div className={styles.statValue}>{totalCategories}</div>
-          <div className={styles.statLabel}>Категорий</div>
+          <div className={styles.statLabel}>{t("admin.statsCategories")}</div>
         </div>
         <div className={styles.statCard}>
           <div className={styles.statValue}>
-            {totalValue.toLocaleString("ru-RU")} ₽
+            {new Intl.NumberFormat(i18n.language).format(totalValue)} ₽
           </div>
-          <div className={styles.statLabel}>Общая стоимость</div>
+          <div className={styles.statLabel}>{t("admin.statsTotalValue")}</div>
         </div>
       </div>
 
       <div className={styles.addProductForm}>
         <h2>
           <FaPlus className={styles.headerIcon} />
-          Добавить новый товар
+          {t("admin.addProductTitle")}
         </h2>
         <div className={styles.inputGroup}>
           <div className={styles.inputWrapper}>
             <FaBox className={styles.inputIcon} />
             <input
               type="text"
-              placeholder="Название товара"
+              placeholder={t("admin.productName")}
               value={newProduct.name}
               onChange={(e) =>
                 setNewProduct({ ...newProduct, name: e.target.value })
@@ -192,10 +224,32 @@ const AdminPage: React.FC = () => {
             />
           </div>
           <div className={styles.inputWrapper}>
+            <FaBox className={styles.inputIcon} />
+            <input
+              type="text"
+              placeholder={t("admin.productNameEnglish")}
+              value={newProduct.nameEn}
+              onChange={(e) =>
+                setNewProduct({ ...newProduct, nameEn: e.target.value })
+              }
+            />
+          </div>
+          <div className={styles.inputWrapper}>
+            <FaBox className={styles.inputIcon} />
+            <input
+              type="text"
+              placeholder={t("admin.productNameAzerbaijani")}
+              value={newProduct.nameAz}
+              onChange={(e) =>
+                setNewProduct({ ...newProduct, nameAz: e.target.value })
+              }
+            />
+          </div>
+          <div className={styles.inputWrapper}>
             <FaFileAlt className={styles.inputIcon} />
             <input
               type="text"
-              placeholder="Описание товара"
+              placeholder={t("admin.productDescription")}
               value={newProduct.description}
               onChange={(e) =>
                 setNewProduct({ ...newProduct, description: e.target.value })
@@ -203,10 +257,32 @@ const AdminPage: React.FC = () => {
             />
           </div>
           <div className={styles.inputWrapper}>
+            <FaFileAlt className={styles.inputIcon} />
+            <input
+              type="text"
+              placeholder={t("admin.productDescriptionEnglish")}
+              value={newProduct.descriptionEn}
+              onChange={(e) =>
+                setNewProduct({ ...newProduct, descriptionEn: e.target.value })
+              }
+            />
+          </div>
+          <div className={styles.inputWrapper}>
+            <FaFileAlt className={styles.inputIcon} />
+            <input
+              type="text"
+              placeholder={t("admin.productDescriptionAzerbaijani")}
+              value={newProduct.descriptionAz}
+              onChange={(e) =>
+                setNewProduct({ ...newProduct, descriptionAz: e.target.value })
+              }
+            />
+          </div>
+          <div className={styles.inputWrapper}>
             <FaDollarSign className={styles.inputIcon} />
             <input
               type="number"
-              placeholder="Цена"
+              placeholder={t("admin.productPrice")}
               value={newProduct.price}
               onChange={(e) =>
                 setNewProduct({ ...newProduct, price: Number(e.target.value) })
@@ -216,7 +292,7 @@ const AdminPage: React.FC = () => {
           <div className={styles.fileInputContainer}>
             <label className={styles.fileInputLabel}>
               <FaImage style={{ marginRight: "8px" }} />
-              {imageFile ? "Изменить изображение" : "Выбрать изображение"}
+              {imageFile ? t("admin.changeImage") : t("admin.selectImage")}
               <input
                 type="file"
                 accept="image/*"
@@ -239,7 +315,7 @@ const AdminPage: React.FC = () => {
             </label>
             {imagePreview && (
               <div className={styles.imagePreview}>
-                <img src={imagePreview} alt="Предпросмотр" />
+                <img src={imagePreview} alt={t("admin.previewAlt")} />
               </div>
             )}
           </div>
@@ -247,7 +323,7 @@ const AdminPage: React.FC = () => {
             <FaTags className={styles.inputIcon} />
             <input
               type="text"
-              placeholder="Категория"
+              placeholder={t("admin.category")}
               value={newProduct.category}
               onChange={(e) =>
                 setNewProduct({ ...newProduct, category: e.target.value })
@@ -263,7 +339,7 @@ const AdminPage: React.FC = () => {
               <BiLoaderAlt className={styles.buttonSpinner} />
             ) : (
               <>
-                <FaPlus /> Добавить товар
+                <FaPlus /> {t("admin.addProduct")}
               </>
             )}
           </button>
@@ -271,24 +347,26 @@ const AdminPage: React.FC = () => {
       </div>
 
       <div className={styles.productsSection}>
-        <h2>Управление товарами</h2>
+        <h2>{t("admin.manageProducts")}</h2>
         <div className={styles.productsList}>
           {products.map((product) => (
             <div key={product.id} className={styles.productCard}>
               <div className={styles.imageWrapper}>
                 <img
                   src={`http://localhost:5091${product.imageUrl}`}
-                  alt={product.name}
+                  alt={getProductName(product, i18n.language)}
                   onError={(e) => {
                     e.currentTarget.src = "/placeholder.png";
                   }}
                 />
               </div>
               <div className={styles.productInfo}>
-                <h3>{product.name}</h3>
-                <p className={styles.productCategory}>{product.category}</p>
+                <h3>{getProductName(product, i18n.language)}</h3>
+                <p className={styles.productCategory}>
+                  {translateCategory(product.category, t)}
+                </p>
                 <p className={styles.productPrice}>
-                  {product.price.toLocaleString("ru-RU")} ₽
+                  {new Intl.NumberFormat(i18n.language).format(product.price)} ₽
                 </p>
                 <button
                   onClick={() => handleDelete(product.id)}
@@ -299,7 +377,7 @@ const AdminPage: React.FC = () => {
                     <BiLoaderAlt className={styles.buttonSpinner} />
                   ) : (
                     <>
-                      <FaTrash /> Удалить
+                      <FaTrash /> {t("admin.delete")}
                     </>
                   )}
                 </button>

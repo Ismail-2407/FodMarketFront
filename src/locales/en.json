@@ -76,6 +76,12 @@
     "addedToCart": "Product added to cart",
     "addToCartFailed": "Failed to add product to cart"
   },
+  "categories": {
+    "fruits": "Fruits",
+    "vegetables": "Vegetables",
+    "bakery": "Bakery",
+    "drinks": "Drinks"
+  },
   "cart": {
     "loading": "Loading...",
     "loadingCart": "Loading cart...",
@@ -188,7 +194,17 @@
     "loadUsersError": "Failed to load users",
     "searchPlaceholder": "Search by email or role...",
     "noUsersFound": "No users found",
-    "noUsers": "No users available"
+    "noUsers": "No users available",
+    "editProductTitle": "Edit product",
+    "currentImageHint": "The current image will be kept if no new image is selected",
+    "saveChanges": "Save changes",
+    "productListTitle": "Product list",
+    "editProduct": "Edit",
+    "confirmDeleteProduct": "Delete this product?",
+    "productNameEnglish": "Product name (English)",
+    "productNameAzerbaijani": "Product name (Azerbaijani)",
+    "productDescriptionEnglish": "Product description (English)",
+    "productDescriptionAzerbaijani": "Product description (Azerbaijani)"
   },
   "profile": {
     "title": "Profile",

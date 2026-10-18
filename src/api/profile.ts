@@ -39,6 +39,17 @@ export async function updateProfile(data: ProfileUpdate): Promise<void> {
   await axiosInstance.put("/profile", data);
 }
 
+export async function uploadProfilePhoto(file: File): Promise<string> {
+  const formData = new FormData();
+  formData.append("photo", file);
+  const response = await axiosInstance.post<{ photoUrl: string }>(
+    "/profile/photo",
+    formData,
+    { headers: { "Content-Type": "multipart/form-data" } },
+  );
+  return response.data.photoUrl;
+}
+
 export async function createAddress(
   data: AddressInput,
 ): Promise<ProfileAddress> {

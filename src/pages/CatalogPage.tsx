@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Modal from "react-modal";
 import { useTranslation } from "react-i18next";
+import { getProductName, translateCategory } from "../i18n/categories";
 import { useAuth } from "../context/AuthContext";
 import { Product } from "../types";
 import { useNavigate } from "react-router-dom";
@@ -28,7 +29,7 @@ const CatalogPage = () => {
 
   const { isAdmin, loading } = useAuth();
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -64,10 +65,13 @@ const CatalogPage = () => {
       products.filter((product) => {
         return (
           (category === ALL_CATEGORY || product.category === category) &&
-          product.name.toLowerCase().includes(search.toLowerCase())
+          (getProductName(product, i18n.language)
+            .toLowerCase()
+            .includes(search.toLowerCase()) ||
+            product.name.toLowerCase().includes(search.toLowerCase()))
         );
       }),
-    [category, products, search],
+    [category, i18n.language, products, search],
   );
 
   const stats = useMemo(
@@ -160,7 +164,9 @@ const CatalogPage = () => {
                   category === cat ? styles.active : ""
                 }`}
               >
-                {cat === ALL_CATEGORY ? t("catalog.allCategories") : cat}
+                {cat === ALL_CATEGORY
+                  ? t("catalog.allCategories")
+                  : translateCategory(cat, t)}
               </button>
             ))}
           </div>
@@ -173,6 +179,10 @@ const CatalogPage = () => {
               productId={product.id}
               name={product.name}
               description={product.description}
+              nameEn={product.nameEn}
+              nameAz={product.nameAz}
+              descriptionEn={product.descriptionEn}
+              descriptionAz={product.descriptionAz}
               price={product.price}
               imageUrl={`http://localhost:5091${product.imageUrl}`}
             />

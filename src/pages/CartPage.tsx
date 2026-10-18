@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Navigate, useNavigate } from "react-router-dom";
 import {
   FaMinus,
@@ -11,6 +12,7 @@ import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import PaymentModal from "../components/PaymentModal";
 import { createOrder, PaymentMethod } from "../api/orders";
+import { getProductName } from "../i18n/categories";
 import styles from "./CartPage.module.css";
 
 const IMAGE_BASE = "http://localhost:5091";
@@ -26,6 +28,7 @@ function CartPage() {
     clearCart,
   } = useCart();
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [updatingId, setUpdatingId] = useState<number | null>(null);
@@ -37,9 +40,11 @@ function CartPage() {
       ),
     [items]
   );
+  const formatNumber = (value: number) =>
+    new Intl.NumberFormat(i18n.language).format(value);
 
   if (authLoading) {
-    return <div className={styles.page}>Loading...</div>;
+    return <div className={styles.page}>{t("cart.loading")}</div>;
   }
 
   if (!isAuthenticated) {
@@ -52,7 +57,7 @@ function CartPage() {
     try {
       await updateQuantity(productId, quantity);
     } catch {
-      alert("Failed to update quantity");
+      alert(t("cart.updateQtyFailed"));
     } finally {
       setUpdatingId(null);
     }
@@ -63,7 +68,7 @@ function CartPage() {
     try {
       await removeFromCart(productId);
     } catch {
-      alert("Failed to remove product");
+      alert(t("cart.removeFailed"));
     } finally {
       setUpdatingId(null);
     }
@@ -77,11 +82,11 @@ function CartPage() {
       await createOrder(productIds, paymentMethod);
       await clearCart();
       setIsPaymentOpen(false);
-      alert("Order placed successfully!");
+      alert(t("cart.orderSuccess"));
       navigate("/catalog");
     } catch (error) {
       console.error("Error placing order:", error);
-      alert("Failed to place order. Please try again.");
+      alert(t("cart.orderFailed"));
     } finally {
       setIsPlacingOrder(false);
     }
@@ -96,24 +101,24 @@ function CartPage() {
           onClick={() => navigate("/catalog")}
         >
           <FaArrowLeft />
-          Back to Catalog
+          {t("cart.backToCatalog")}
         </button>
         <h1>
-          <FaShoppingBasket /> Your Cart
+          <FaShoppingBasket /> {t("cart.title")}
         </h1>
       </div>
 
       {loading ? (
-        <p className={styles.empty}>Loading cart...</p>
+        <p className={styles.empty}>{t("cart.loadingCart")}</p>
       ) : items.length === 0 ? (
         <div className={styles.emptyState}>
-          <p className={styles.empty}>Your cart is empty</p>
+          <p className={styles.empty}>{t("cart.empty")}</p>
           <button
             type="button"
             className={styles.primaryButton}
             onClick={() => navigate("/catalog")}
           >
-            Browse Catalog
+            {t("cart.browseCatalog")}
           </button>
         </div>
       ) : (
@@ -126,11 +131,17 @@ function CartPage() {
 
               return (
                 <li key={item.productId} className={styles.item}>
-                  <img src={imageSrc} alt={item.name} className={styles.image} />
+                  <img
+                    src={imageSrc}
+                    alt={getProductName(item, i18n.language) || t("common.product")}
+                    className={styles.image}
+                  />
                   <div className={styles.info}>
-                    <h3>{item.name}</h3>
+                    <h3>
+                      {getProductName(item, i18n.language) || t("common.product")}
+                    </h3>
                     <p className={styles.price}>
-                      {item.price.toLocaleString("en-US")} ₽
+                      {formatNumber(item.price)} ₽
                     </p>
                     <div className={styles.quantityRow}>
                       <button
@@ -143,11 +154,13 @@ function CartPage() {
                             item.quantity - 1
                           )
                         }
-                        aria-label="Decrease quantity"
+                        aria-label={t("cart.decreaseQty")}
                       >
                         <FaMinus />
                       </button>
-                      <span className={styles.quantity}>{item.quantity}</span>
+                      <span className={styles.quantity}>
+                        {formatNumber(item.quantity)}
+                      </span>
                       <button
                         type="button"
                         className={styles.qtyButton}
@@ -158,7 +171,7 @@ function CartPage() {
                             item.quantity + 1
                           )
                         }
-                        aria-label="Increase quantity"
+                        aria-label={t("cart.increaseQty")}
                       >
                         <FaPlus />
                       </button>
@@ -166,7 +179,7 @@ function CartPage() {
                   </div>
                   <div className={styles.itemActions}>
                     <p className={styles.lineTotal}>
-                      {(item.price * item.quantity).toLocaleString("en-US")} ₽
+                      {formatNumber(item.price * item.quantity)} ₽
                     </p>
                     <button
                       type="button"
@@ -174,7 +187,7 @@ function CartPage() {
                       disabled={updatingId === item.productId}
                       onClick={() => void handleRemove(item.productId)}
                     >
-                      <FaTrash /> Delete
+                      <FaTrash /> {t("cart.delete")}
                     </button>
                   </div>
                 </li>
@@ -184,8 +197,8 @@ function CartPage() {
 
           <div className={styles.summary}>
             <div className={styles.totalRow}>
-              <span>Total</span>
-              <strong>{total.toLocaleString("en-US")} ₽</strong>
+              <span>{t("cart.total")}</span>
+              <strong>{formatNumber(total)} ₽</strong>
             </div>
             <button
               type="button"
@@ -193,7 +206,7 @@ function CartPage() {
               disabled={isPlacingOrder}
               onClick={() => setIsPaymentOpen(true)}
             >
-              Place Order
+              {t("cart.placeOrder")}
             </button>
           </div>
         </>

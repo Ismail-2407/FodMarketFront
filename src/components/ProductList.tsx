@@ -6,6 +6,10 @@ type Product = {
   id: number;
   name: string;
   description: string;
+  nameEn?: string | null;
+  nameAz?: string | null;
+  descriptionEn?: string | null;
+  descriptionAz?: string | null;
   price: number;
   imageUrl: string;
 };
@@ -43,6 +47,10 @@ const ProductList: React.FC = () => {
           productId={product.id}
           name={product.name}
           description={product.description}
+          nameEn={product.nameEn}
+          nameAz={product.nameAz}
+          descriptionEn={product.descriptionEn}
+          descriptionAz={product.descriptionAz}
           price={product.price}
           imageUrl={`http://localhost:5091${product.imageUrl}`}
         />

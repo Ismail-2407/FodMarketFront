@@ -76,6 +76,12 @@
     "addedToCart": "Товар добавлен в корзину",
     "addToCartFailed": "Не удалось добавить товар в корзину"
   },
+  "categories": {
+    "fruits": "Фрукты",
+    "vegetables": "Овощи",
+    "bakery": "Выпечка",
+    "drinks": "Напитки"
+  },
   "cart": {
     "loading": "Загрузка...",
     "loadingCart": "Загрузка корзины...",
@@ -188,7 +194,17 @@
     "loadUsersError": "Ошибка загрузки пользователей",
     "searchPlaceholder": "Поиск по email или роли...",
     "noUsersFound": "Пользователи не найдены",
-    "noUsers": "Нет доступных пользователей"
+    "noUsers": "Нет доступных пользователей",
+    "editProductTitle": "Редактировать товар",
+    "currentImageHint": "Текущее изображение будет сохранено, если новое не выбрано",
+    "saveChanges": "Сохранить",
+    "productListTitle": "Список товаров",
+    "editProduct": "Редактировать",
+    "confirmDeleteProduct": "Удалить товар?",
+    "productNameEnglish": "Название товара (английский)",
+    "productNameAzerbaijani": "Название товара (азербайджанский)",
+    "productDescriptionEnglish": "Описание товара (английский)",
+    "productDescriptionAzerbaijani": "Описание товара (азербайджанский)"
   },
   "profile": {
     "title": "Профиль",

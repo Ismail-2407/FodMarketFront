@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -7,6 +7,7 @@ import {
   FaSignOutAlt,
   FaSpinner,
   FaTrash,
+  FaUpload,
 } from "react-icons/fa";
 import axiosInstance from "../api/axiosInstance";
 import { fetchOrders } from "../api/orders";
@@ -17,18 +18,24 @@ import {
   fetchProfile,
   ProfileAddress,
   removeFavorite,
+  uploadProfilePhoto,
   updateAddress,
   updateProfile as updateProfileRequest,
 } from "../api/profile";
 import { API_BASE_URL } from "../config/api";
 import { useAuth } from "../context/AuthContext";
 import { Order } from "../types/order";
+import { getProductName } from "../i18n/categories";
 import styles from "./ProfilePage.module.css";
 
 interface AccountProduct {
   id: number;
   name: string;
   description: string;
+  nameEn?: string | null;
+  nameAz?: string | null;
+  descriptionEn?: string | null;
+  descriptionAz?: string | null;
   price: number;
   imageUrl: string;
 }
@@ -50,6 +57,7 @@ const ProfilePage = () => {
   const { currentUser, logout } = useAuth();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const photoInputRef = useRef<HTMLInputElement>(null);
   const [profile, setProfile] = useState<ProfileFormData>({
     fullName: "",
     email: "",
@@ -71,6 +79,8 @@ const ProfilePage = () => {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [photoUploadError, setPhotoUploadError] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -246,6 +256,25 @@ const ProfilePage = () => {
     }
   };
 
+  const handlePhotoSelected = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    setUploadingPhoto(true);
+    setPhotoUploadError(false);
+    try {
+      const photoUrl = await uploadProfilePhoto(file);
+      setProfile((current) => ({ ...current, photoUrl }));
+    } catch {
+      setPhotoUploadError(true);
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat(i18n.language, {
       style: "currency",
@@ -302,7 +331,11 @@ const ProfilePage = () => {
               {profile.photoUrl && (
                 <img
                   key={profile.photoUrl}
-                  src={profile.photoUrl}
+                  src={
+                    profile.photoUrl.startsWith("http")
+                      ? profile.photoUrl
+                      : `${API_BASE_URL}${profile.photoUrl}`
+                  }
                   alt={t("account.profilePhoto")}
                   onError={(event) => {
                     event.currentTarget.hidden = true;
@@ -361,17 +394,36 @@ const ProfilePage = () => {
                   }
                 />
               </label>
-              <label className={styles.field}>
-                <span>{t("account.photoUrl")}</span>
+              <div className={styles.field}>
+                <span>{t("account.profilePhoto")}</span>
                 <input
-                  type="url"
-                  value={profile.photoUrl}
-                  onChange={(event) =>
-                    updateProfileField("photoUrl", event.target.value)
-                  }
-                  placeholder="https://"
+                  ref={photoInputRef}
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={(event) => void handlePhotoSelected(event)}
                 />
-              </label>
+                <button
+                  type="button"
+                  className={styles.addAddressButton}
+                  disabled={uploadingPhoto}
+                  onClick={() => photoInputRef.current?.click()}
+                >
+                  {uploadingPhoto ? (
+                    <FaSpinner className={styles.spinner} aria-hidden="true" />
+                  ) : (
+                    <FaUpload aria-hidden="true" />
+                  )}
+                  {uploadingPhoto
+                    ? t("common.loading")
+                    : t("account.profilePhoto")}
+                </button>
+                {photoUploadError && (
+                  <span className={styles.errorMessage} role="alert">
+                    {t("account.saveFailed")}
+                  </span>
+                )}
+              </div>
 
               <div className={styles.addressSection}>
                 <h3>{t("account.addresses")}</h3>
@@ -512,10 +564,10 @@ const ProfilePage = () => {
                           ? product.imageUrl
                           : `${API_BASE_URL}${product.imageUrl}`
                       }
-                      alt={product.name}
+                      alt={getProductName(product, i18n.language)}
                     />
                     <div className={styles.favoriteInfo}>
-                      <strong>{product.name}</strong>
+                      <strong>{getProductName(product, i18n.language)}</strong>
                       <span>{formatCurrency(product.price)}</span>
                     </div>
                     <button

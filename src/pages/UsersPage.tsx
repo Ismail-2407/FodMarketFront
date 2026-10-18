@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import axiosInstance from "../api/axiosInstance";
 import styles from "./UsersPage.module.css";
@@ -25,8 +26,9 @@ interface ApiResponse {
 const UsersPage: React.FC = () => {
   const { isAdmin, loading } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [users, setUsers] = useState<User[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<"admin.loadUsersError" | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -48,7 +50,7 @@ const UsersPage: React.FC = () => {
       setUsers(list);
       setError(null);
     } catch (err) {
-      setError("Ошибка загрузки пользователей");
+      setError("admin.loadUsersError");
       console.error(err);
       setUsers([]);
     } finally {
@@ -73,7 +75,7 @@ const UsersPage: React.FC = () => {
     return (
       <div className={styles.loadingContainer}>
         <BiLoaderAlt className={styles.loadingSpinner} />
-        <p>Загрузка...</p>
+        <p>{t("admin.loading")}</p>
       </div>
     );
   }
@@ -87,19 +89,19 @@ const UsersPage: React.FC = () => {
     <div className={styles.usersContainer}>
       <div className={styles.header}>
         <button className={styles.navButton} onClick={() => navigate("/admin")}>
-          <FaArrowLeft /> Вернуться в админку
+          <FaArrowLeft /> {t("admin.backToAdmin")}
         </button>
-        <h1>Управление пользователями</h1>
+        <h1>{t("admin.usersTitle")}</h1>
       </div>
 
-      {error && <div className={styles.errorMessage}>{error}</div>}
+      {error && <div className={styles.errorMessage}>{t(error)}</div>}
 
       <div className={styles.searchContainer}>
         <div className={styles.searchWrapper}>
           <FaSearch className={styles.searchIcon} />
           <input
             type="text"
-            placeholder="Поиск по email или роли..."
+            placeholder={t("admin.searchPlaceholder")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className={styles.searchInput}
@@ -111,8 +113,8 @@ const UsersPage: React.FC = () => {
         {filteredUsers.length === 0 ? (
           <div className={styles.noResults}>
             {searchQuery
-              ? "Пользователи не найдены"
-              : "Нет доступных пользователей"}
+              ? t("admin.noUsersFound")
+              : t("admin.noUsers")}
           </div>
         ) : (
           filteredUsers.map((user) => (

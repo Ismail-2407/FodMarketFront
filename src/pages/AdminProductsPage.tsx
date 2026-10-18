@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Product } from "../types";
+import { getProductName, translateCategory } from "../i18n/categories";
 import styles from "./AdminProductsPage.module.css";
 
 const API_URL = "http://localhost:5091";
 
 function AdminProductsPage() {
+  const { t, i18n } = useTranslation();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -29,7 +32,7 @@ function AdminProductsPage() {
   }, []);
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Удалить товар?")) return;
+    if (!confirm(t("admin.confirmDeleteProduct"))) return;
     try {
       await fetch(`${API_URL}/api/admin/products/${id}`, {
         method: "DELETE",
@@ -45,18 +48,18 @@ function AdminProductsPage() {
 
   return (
     <div className={styles.container}>
-      <h1>Управление товарами</h1>
+      <h1>{t("admin.manageProducts")}</h1>
 
       {loading ? (
-        <p>Загрузка...</p>
+        <p>{t("admin.loading")}</p>
       ) : (
         <table className={styles.table}>
           <thead>
             <tr>
               <th>ID</th>
-              <th>Название</th>
-              <th>Категория</th>
-              <th>Цена</th>
+              <th>{t("admin.productName")}</th>
+              <th>{t("admin.category")}</th>
+              <th>{t("admin.productPrice")}</th>
               <th></th>
             </tr>
           </thead>
@@ -64,15 +67,15 @@ function AdminProductsPage() {
             {products.map((p) => (
               <tr key={p.id}>
                 <td>{p.id}</td>
-                <td>{p.name}</td>
-                <td>{p.category}</td>
-                <td>{p.price} ₽</td>
+                <td>{getProductName(p, i18n.language)}</td>
+                <td>{translateCategory(p.category, t)}</td>
+                <td>{new Intl.NumberFormat(i18n.language).format(p.price)} ₽</td>
                 <td>
                   <button
                     className={styles.delete}
                     onClick={() => handleDelete(p.id)}
                   >
-                    Удалить
+                    {t("admin.delete")}
                   </button>
                 </td>
               </tr>

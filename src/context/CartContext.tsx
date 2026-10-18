@@ -7,12 +7,18 @@ import React, {
   useState,
 } from "react";
 import axiosInstance from "../api/axiosInstance";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "./AuthContext";
 
 export type CartItem = {
   productId: number;
   quantity: number;
   name: string;
+  description?: string;
+  nameEn?: string | null;
+  nameAz?: string | null;
+  descriptionEn?: string | null;
+  descriptionAz?: string | null;
   price: number;
   imageUrl: string;
 };
@@ -29,6 +35,12 @@ type CartContextType = {
   updateQuantity: (productId: number, quantity: number) => Promise<void>;
   clearCart: () => Promise<void>;
 };
+type CartErrorKey =
+  | "cartContext.loadFailed"
+  | "cartContext.addFailed"
+  | "cartContext.removeFailed"
+  | "cartContext.updateFailed"
+  | "cartContext.clearFailed";
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
@@ -69,8 +81,27 @@ function normalizeCartItem(raw: Record<string, unknown>): CartItem | null {
   );
 
   const name = String(
-    raw.name ?? raw.Name ?? nested?.name ?? nested?.Name ?? "Product"
+    raw.name ?? raw.Name ?? nested?.name ?? nested?.Name ?? ""
   );
+  const description = String(
+    raw.description ??
+      raw.Description ??
+      nested?.description ??
+      nested?.Description ??
+      ""
+  );
+  const nameEn = raw.nameEn ?? raw.NameEn ?? nested?.nameEn ?? nested?.NameEn;
+  const nameAz = raw.nameAz ?? raw.NameAz ?? nested?.nameAz ?? nested?.NameAz;
+  const descriptionEn =
+    raw.descriptionEn ??
+    raw.DescriptionEn ??
+    nested?.descriptionEn ??
+    nested?.DescriptionEn;
+  const descriptionAz =
+    raw.descriptionAz ??
+    raw.DescriptionAz ??
+    nested?.descriptionAz ??
+    nested?.DescriptionAz;
 
   const price = Number(
     raw.price ?? raw.Price ?? nested?.price ?? nested?.Price ?? 0
@@ -88,6 +119,11 @@ function normalizeCartItem(raw: Record<string, unknown>): CartItem | null {
     productId,
     quantity,
     name,
+    description,
+    nameEn: typeof nameEn === "string" ? nameEn : null,
+    nameAz: typeof nameAz === "string" ? nameAz : null,
+    descriptionEn: typeof descriptionEn === "string" ? descriptionEn : null,
+    descriptionAz: typeof descriptionAz === "string" ? descriptionAz : null,
     price: Number.isFinite(price) ? price : 0,
     imageUrl,
   };
@@ -97,9 +133,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const { isAuthenticated } = useAuth();
+  const { t } = useTranslation();
   const [items, setItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [errorKey, setErrorKey] = useState<CartErrorKey | null>(null);
 
   const fetchCart = useCallback(async () => {
     if (!isAuthenticated) {
@@ -108,7 +145,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     }
 
     setLoading(true);
-    setError(null);
+    setErrorKey(null);
 
     try {
       const res = await axiosInstance.get("/cart");
@@ -118,7 +155,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       setItems(list);
     } catch (err) {
       console.error("Error loading cart:", err);
-      setError("Failed to load cart.");
+      setErrorKey("cartContext.loadFailed");
       setItems([]);
     } finally {
       setLoading(false);
@@ -129,13 +166,13 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     async (productId: number) => {
       if (!isAuthenticated) return;
 
-      setError(null);
+      setErrorKey(null);
       try {
         await axiosInstance.post(`/cart/add/${productId}`);
         await fetchCart();
       } catch (err) {
         console.error("Error adding to cart:", err);
-        setError("Failed to add product to cart.");
+        setErrorKey("cartContext.addFailed");
         throw err;
       }
     },
@@ -146,13 +183,13 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     async (productId: number) => {
       if (!isAuthenticated) return;
 
-      setError(null);
+      setErrorKey(null);
       try {
         await axiosInstance.delete(`/cart/remove/${productId}`);
         setItems((prev) => prev.filter((item) => item.productId !== productId));
       } catch (err) {
         console.error("Error removing from cart:", err);
-        setError("Failed to remove product from cart.");
+        setErrorKey("cartContext.removeFailed");
         throw err;
       }
     },
@@ -164,7 +201,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       if (!isAuthenticated) return;
 
       const nextQuantity = Math.max(1, quantity);
-      setError(null);
+      setErrorKey(null);
 
       try {
         await axiosInstance.put(`/cart/update/${productId}`, nextQuantity);
@@ -177,7 +214,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
         );
       } catch (err) {
         console.error("Error updating cart quantity:", err);
-        setError("Failed to update quantity.");
+        setErrorKey("cartContext.updateFailed");
         throw err;
       }
     },
@@ -187,13 +224,13 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   const clearCart = useCallback(async () => {
     if (!isAuthenticated) return;
 
-    setError(null);
+    setErrorKey(null);
     try {
       await axiosInstance.delete("/cart/clear");
       setItems([]);
     } catch (err) {
       console.error("Error clearing cart:", err);
-      setError("Failed to clear cart.");
+      setErrorKey("cartContext.clearFailed");
       throw err;
     }
   }, [isAuthenticated]);
@@ -217,7 +254,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
     itemCount,
     total,
     loading,
-    error,
+    error: errorKey ? t(errorKey) : null,
     fetchCart,
     addToCart,
     removeFromCart,

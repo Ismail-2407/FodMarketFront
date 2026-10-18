@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import "./PaymentModal.css";
 import { FaMoneyBill, FaPaypal } from "react-icons/fa";
 import { PayPalButtons } from "@paypal/react-paypal-js";
@@ -19,6 +20,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   amount,
   isSubmitting = false,
 }) => {
+  const { t, i18n } = useTranslation();
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | "">("");
 
   if (!isOpen) return null;
@@ -27,12 +29,12 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
     [
       {
         id: "Cash",
-        label: "Cash on Delivery",
+        label: t("payment.cash"),
         icon: <FaMoneyBill />,
       },
       {
         id: "PayPal",
-        label: "Pay Online (PayPal)",
+        label: t("payment.paypal"),
         icon: <FaPaypal />,
       },
     ];
@@ -45,9 +47,10 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   return (
     <div className="payment-modal-overlay" onClick={onClose}>
       <div className="payment-modal" onClick={(e) => e.stopPropagation()}>
-        <h2>Select Payment Method</h2>
+        <h2>{t("payment.title")}</h2>
         <p className="payment-amount">
-          Amount: <strong>{amount.toLocaleString("en-US")} ₽</strong>
+          {t("payment.amount")}{" "}
+          <strong>{new Intl.NumberFormat(i18n.language).format(amount)} ₽</strong>
         </p>
 
         <div className="payment-methods">
@@ -101,7 +104,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
               }}
               onError={(err) => {
                 console.error("PayPal error:", err);
-                alert("PayPal payment failed. Please try again.");
+                alert(t("payment.paypalFailed"));
               }}
             />
           </div>
@@ -115,7 +118,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
               onClick={onClose}
               disabled={isSubmitting}
             >
-              Cancel
+              {t("payment.cancel")}
             </button>
             <button
               type="button"
@@ -123,7 +126,9 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
               onClick={handleConfirmCash}
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Placing order..." : "Confirm Cash on Delivery"}
+              {isSubmitting
+                ? t("payment.placingOrder")
+                : t("payment.confirmCash")}
             </button>
           </div>
         )}
@@ -131,7 +136,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
         {!selectedMethod && (
           <div className="modal-buttons">
             <button type="button" className="cancel-button" onClick={onClose}>
-              Cancel
+              {t("payment.cancel")}
             </button>
           </div>
         )}
